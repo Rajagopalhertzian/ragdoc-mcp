@@ -1,0 +1,252 @@
+{
+  "name": "ragdoc-mcp",
+  "version": "0.1.0",
+  "description": "RAG Doctor: Local-first MCP server for diagnosing and fixing retrieval pipelines over technical documents",
+  "author": "RAG Doctor Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/ragdoc-mcp"
+  },
+  "homepage": "https://github.com/your-org/ragdoc-mcp",
+  "bugs": "https://github.com/your-org/ragdoc-mcp/issues",
+  "keywords": [
+    "mcp",
+    "rag",
+    "retrieval",
+    "diagnosis",
+    "vector-search",
+    "embeddings",
+    "document-processing"
+  ],
+  "mcp": {
+    "protocol_version": "2025-06-18",
+    "transport": "stdio",
+    "capabilities": {
+      "tools": true,
+      "resources": true,
+      "prompts": true,
+      "sampling": false
+    }
+  },
+  "tools": [
+    {
+      "name": "profile_corpus",
+      "description": "Profile a document corpus: sample files and report type mix, scanned share, equation/table/code density, languages, total pages, and average document length. Read-only.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string", "description": "Path to corpus directory"},
+          "sample_size": {"type": "integer", "default": 200, "description": "Number of files to sample"},
+          "detail_level": {"type": "string", "enum": ["brief", "full"], "default": "brief"}
+        },
+        "required": ["path"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "profile_id": {"type": "string"},
+          "total_files": {"type": "integer"},
+          "total_pages": {"type": "integer"},
+          "type_mix": {"type": "object"},
+          "scanned_share": {"type": "number"},
+          "equation_density": {"type": "number"},
+          "table_density": {"type": "number"},
+          "code_density": {"type": "number"},
+          "languages": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "annotations": {"readOnly": true, "idempotent": true}
+    },
+    {
+      "name": "plan_rag",
+      "description": "Create a RAG pipeline plan from a corpus profile or path. Constraints: privacy (local_only/cloud_ok), budget_usd, hardware (cpu/gpu), latency_target_ms. Returns joint plan with parser/chunker/embedder/store/retriever choices, measured time/cost estimates, and decision log with reasons.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "profile_id": {"type": "string"},
+          "path": {"type": "string"},
+          "privacy": {"type": "string", "enum": ["local_only", "cloud_ok"], "default": "local_only"},
+          "budget_usd": {"type": "number"},
+          "hardware": {"type": "string", "enum": ["cpu", "gpu"], "default": "cpu"},
+          "latency_target_ms": {"type": "integer"},
+          "detail_level": {"type": "string", "enum": ["brief", "full"], "default": "brief"}
+        },
+        "oneOf": [{"required": ["profile_id"]}, {"required": ["path"]}]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "plan_id": {"type": "string"},
+          "profile_id": {"type": "string"},
+          "config": {"type": "object"},
+          "cost_estimate": {"type": "object"},
+          "decision_log": {"type": "array"}
+        }
+      },
+      "annotations": {"readOnly": true, "idempotent": true}
+    },
+    {
+      "name": "build_index",
+      "description": "Execute a RAG plan to build the index. Resumable, batched, cached by file hash. Reports progress. Writes only inside collection directory.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "plan_id": {"type": "string"},
+          "resume": {"type": "boolean", "default": true},
+          "detail_level": {"type": "string", "enum": ["brief", "full"], "default": "brief"}
+        },
+        "required": ["plan_id"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "collection_name": {"type": "string"},
+          "total_chunks": {"type": "integer"},
+          "index_path": {"type": "string"},
+          "time_elapsed_seconds": {"type": "number"}
+        }
+      },
+      "annotations": {"readOnly": false, "idempotent": true}
+    },
+    {
+      "name": "search",
+      "description": "Hybrid retrieval (dense + BM25 fused with RRF) plus cross-encoder rerank. Returns chunks with citations (file, page, line/heading), per-stage scores, and truncation notes. Results labeled as untrusted document text.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "collection": {"type": "string"},
+          "query": {"type": "string"},
+          "k": {"type": "integer", "default": 8},
+          "filters": {"type": "object"},
+          "max_tokens": {"type": "integer", "default": 1500},
+          "detail_level": {"type": "string", "enum": ["brief", "full"], "default": "brief"}
+        },
+        "required": ["collection", "query"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "results": {"type": "array"},
+          "query": {"type": "string"},
+          "total_candidates": {"type": "integer"},
+          "retrieval_time_ms": {"type": "number"},
+          "rerank_time_ms": {"type": "number"}
+        }
+      },
+      "annotations": {"readOnly": true, "idempotent": true}
+    },
+    {
+      "name": "diagnose_failure",
+      "description": "Use when a RAG answer is wrong, missing, or low quality. Traces the question through every stage (parse, chunk, index, retrieve, rerank, pack, downstream) and returns the first failing stage, failure code, confidence, evidence (snippets, ranks per stage), and fixes ordered by expected impact.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "collection": {"type": "string"},
+          "question": {"type": "string"},
+          "expected_answer": {"type": "string"},
+          "expected_source": {"type": "string"},
+          "detail_level": {"type": "string", "enum": ["brief", "full"], "default": "full"}
+        },
+        "required": ["collection", "question"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "first_failing_stage": {"type": "integer"},
+          "failure_code": {"type": "string"},
+          "confidence": {"type": "number"},
+          "evidence_per_stage": {"type": "array"},
+          "fixes": {"type": "array"}
+        }
+      },
+      "annotations": {"readOnly": true, "idempotent": true}
+    },
+    {
+      "name": "verify_fix",
+      "description": "Apply a proposed fix to a shadow copy of the config/index, re-run failing cases plus a regression sample, return before/after metrics. Promotes the change only if caller confirms (apply=true).",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "collection": {"type": "string"},
+          "fix": {"type": "object"},
+          "cases": {"type": "array", "items": {"type": "object"}},
+          "regression_cases": {"type": "array", "items": {"type": "object"}},
+          "apply": {"type": "boolean", "default": false},
+          "detail_level": {"type": "string", "enum": ["brief", "full"], "default": "full"}
+        },
+        "required": ["collection", "fix", "cases"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "fix_id": {"type": "string"},
+          "before_metrics": {"type": "object"},
+          "after_metrics": {"type": "object"},
+          "regression_check": {"type": "object"},
+          "promoted": {"type": "boolean"},
+          "apply_confirmed": {"type": "boolean"}
+        }
+      },
+      "annotations": {"readOnly": false, "idempotent": false}
+    },
+    {
+      "name": "domain_eval",
+      "description": "Measure retrieval quality per content type (prose, table, equation, code). Builds test questions from corpus, scores hit@k, MRR, recall per type, lists weakest documents.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "collection": {"type": "string"},
+          "types": {"type": "array", "items": {"type": "string", "enum": ["prose", "table", "equation", "code"]}},
+          "n_per_type": {"type": "integer", "default": 30},
+          "detail_level": {"type": "string", "enum": ["brief", "full"], "default": "full"}
+        },
+        "required": ["collection", "types"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "results": {"type": "array"}
+        }
+      },
+      "annotations": {"readOnly": true, "idempotent": true}
+    }
+  ],
+  "resources": [
+    {
+      "uri": "ragdoc://collections",
+      "name": "Collections",
+      "description": "List all RAG collections",
+      "mime_type": "application/json"
+    },
+    {
+      "uri": "ragdoc://plan/{plan_id}",
+      "name": "Plan",
+      "description": "Get a RAG plan by ID",
+      "mime_type": "application/json"
+    },
+    {
+      "uri": "ragdoc://report/{report_id}",
+      "name": "Report",
+      "description": "Get an evaluation/diagnosis report by ID",
+      "mime_type": "application/json"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "build-rag",
+      "description": "Prompt for building a RAG system from a corpus",
+      "arguments": [
+        {"name": "corpus_path", "description": "Path to the document corpus", "required": true}
+      ]
+    },
+    {
+      "name": "debug-rag",
+      "description": "Prompt for debugging a RAG failure",
+      "arguments": [
+        {"name": "collection", "description": "Collection name", "required": true},
+        {"name": "failing_question", "description": "The question that failed", "required": true}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+[build-system]
+requires = ["uv_build>=0.7.0,<0.8.0"]
+build-backend = "uv_build"
+
+[project]
+name = "ragdoc-mcp"
+version = "0.1.0"
+description = "RAG Doctor: Local-first MCP server for diagnosing and fixing retrieval pipelines over technical documents"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "RAG Doctor Contributors", email = "ragdoc@example.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "fastmcp>=4.1.0",
+    "pydantic>=2.8.0",
+    "pydantic-settings>=2.4.0",
+    "pyyaml>=6.0.1",
+    "lancedb>=0.40.0",
+    "fastembed>=0.9.0",
+    "docling>=2.95.0",
+    "tree-sitter>=0.26.0",
+    "tree-sitter-python>=0.25.0",
+    "tree-sitter-javascript>=0.25.0",
+    "tree-sitter-typescript>=0.23.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.6.0",
+    "mypy>=1.10.0",
+    "pip-audit>=2.10.0",
+]
+http = [
+    "httpx>=0.27.0",
+    "uvicorn>=0.30.0",
+]
+cloud = [
+    "llama-parse>=0.5.0",
+]
+all = [
+    "httpx>=0.27.0",
+    "uvicorn>=0.30.0",
+    "llama-parse>=0.5.0",
+]
+
+[project.scripts]
+ragdoc = "ragdoc.server:main"
+ragdoc-http = "ragdoc.server_http:main"
+
+[project.urls]
+Homepage = "https://github.com/your-org/ragdoc-mcp"
+Repository = "https://github.com/your-org/ragdoc-mcp"
+Issues = "https://github.com/your-org/ragdoc-mcp/issues"
+Documentation = "https://github.com/your-org/ragdoc-mcp/blob/main/docs/README.md"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.6.0",
+    "mypy>=1.10.0",
+    "pip-audit>=2.10.0",
+]
+sources = {ragdoc = {path = "src", editable = true}}
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "UP", "W", "C4", "C90", "ANN", "ARG", "PTH", "RET", "SIM", "T20", "TID", "TRY"]
+ignore = ["ANN101", "ANN102", "ARG001", "ARG002", "PTH118", "PTH120", "PTH123", "RET503", "TRY003"]
+fixable = ["F", "I", "UP", "W", "C4", "C90", "ARG", "PTH", "RET", "SIM", "T20", "TID", "TRY"]
+unfixable = ["E", "ANN"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = true
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_optional = true
+show_error_codes = true
+pretty = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "src/ragdoc/server.py", "src/ragdoc/server_http.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

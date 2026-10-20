@@ -1,0 +1,110 @@
+# Recommended models for embedding and reranking
+# Updated: 2026-10-20 - Verify current options when building
+
+embedding_models:
+  # Local models (fastembed / sentence-transformers)
+  - name: "BAAI/bge-small-en-v1.5"
+    dimensions: 384
+    max_tokens: 512
+    speed: "fast"
+    quality: "good"
+    license: "MIT"
+    recommended_for: ["general", "code", "prose"]
+    fastembed_id: "BAAI/bge-small-en-v1.5"
+
+  - name: "BAAI/bge-base-en-v1.5"
+    dimensions: 768
+    max_tokens: 512
+    speed: "medium"
+    quality: "better"
+    license: "MIT"
+    recommended_for: ["general", "prose", "table"]
+    fastembed_id: "BAAI/bge-base-en-v1.5"
+
+  - name: "BAAI/bge-large-en-v1.5"
+    dimensions: 1024
+    max_tokens: 512
+    speed: "slow"
+    quality: "best"
+    license: "MIT"
+    recommended_for: ["general", "prose", "table", "equation"]
+    fastembed_id: "BAAI/bge-large-en-v1.5"
+
+  - name: "nomic-ai/nomic-embed-text-v1.5"
+    dimensions: 768
+    max_tokens: 8192
+    speed: "medium"
+    quality: "better"
+    license: "Apache-2.0"
+    recommended_for: ["general", "code", "long-context"]
+    fastembed_id: "nomic-ai/nomic-embed-text-v1.5"
+
+  - name: "intfloat/e5-small-v2"
+    dimensions: 384
+    max_tokens: 512
+    speed: "fast"
+    quality: "good"
+    license: "MIT"
+    recommended_for: ["general", "code"]
+    fastembed_id: "intfloat/e5-small-v2"
+
+  # Code-specific embedders
+  - name: "jinaai/jina-embeddings-v2-base-code"
+    dimensions: 768
+    max_tokens: 8192
+    speed: "medium"
+    quality: "best-for-code"
+    license: "MIT"
+    recommended_for: ["code"]
+    fastembed_id: "jinaai/jina-embeddings-v2-base-code"
+
+reranker_models:
+  - name: "BAAI/bge-reranker-base"
+    max_tokens: 512
+    speed: "medium"
+    quality: "good"
+    license: "MIT"
+    recommended_for: ["general", "prose", "table"]
+    fastembed_id: "BAAI/bge-reranker-base"
+
+  - name: "BAAI/bge-reranker-large"
+    max_tokens: 512
+    speed: "slow"
+    quality: "best"
+    license: "MIT"
+    recommended_for: ["general", "prose", "table", "equation"]
+    fastembed_id: "BAAI/bge-reranker-large"
+
+  - name: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    max_tokens: 512
+    speed: "fast"
+    quality: "good"
+    license: "Apache-2.0"
+    recommended_for: ["general", "code"]
+    fastembed_id: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
+# Scale tiers for vector store selection
+scale_tiers:
+  - name: "small"
+    max_chunks: 100000
+    recommended_store: "lancedb"
+    description: "Laptop-scale, single machine"
+
+  - name: "medium"
+    max_chunks: 10000000
+    recommended_store: "qdrant"
+    description: "Multi-million chunks, single node Qdrant or pgvector"
+
+  - name: "large"
+    max_chunks: 100000000
+    recommended_store: "qdrant-cluster"
+    description: "Sharded Qdrant or Milvus cluster"
+
+# Default configuration profiles
+defaults:
+  chunk_sizes: [256, 512, 800, 1200]
+  overlaps: [0, 0.1, 0.15]
+  retrieve_top_k: 50
+  rerank_top_k: 8
+  rrf_k: 60
+  max_tokens_context: 1500
