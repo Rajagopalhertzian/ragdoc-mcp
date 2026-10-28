@@ -1,0 +1,123 @@
+{
+  "n_cases": 86,
+  "stage_attribution_accuracy": 0.977,
+  "failure_code_accuracy": 0.977,
+  "subcause_accuracy_parse": 1.0,
+  "false_blame_rate_on_controls": 0.0,
+  "missed_failures_called_generation_side": 0,
+  "per_code": {
+    "BUDGET_TRUNCATED": {
+      "n": 4,
+      "accuracy": 1.0
+    },
+    "CHUNK_DILUTED": {
+      "n": 2,
+      "accuracy": 0.0
+    },
+    "CHUNK_SPLIT": {
+      "n": 8,
+      "accuracy": 1.0
+    },
+    "CONTEXT_MISSING": {
+      "n": 8,
+      "accuracy": 1.0
+    },
+    "GENERATION_SIDE": {
+      "n": 8,
+      "accuracy": 1.0
+    },
+    "INDEX_MISSING": {
+      "n": 8,
+      "accuracy": 1.0
+    },
+    "INDEX_STALE": {
+      "n": 8,
+      "accuracy": 1.0
+    },
+    "PARSE_LOSS": {
+      "n": 16,
+      "accuracy": 1.0
+    },
+    "RANK_LOW": {
+      "n": 8,
+      "accuracy": 1.0
+    },
+    "RERANK_DEMOTED": {
+      "n": 8,
+      "accuracy": 1.0
+    },
+    "RETRIEVAL_MISS": {
+      "n": 8,
+      "accuracy": 1.0
+    }
+  },
+  "confusion": [
+    {
+      "true": "CHUNK_DILUTED",
+      "diagnosed": "RERANK_DEMOTED",
+      "count": 2
+    }
+  ],
+  "mean_confidence_when_right": 0.87,
+  "mean_confidence_when_wrong": 0.9,
+  "mean_ms_per_diagnosis": 21.9,
+  "mismatches": [
+    {
+      "id": "chunk_diluted-32",
+      "true": "CHUNK_DILUTED",
+      "got": "RERANK_DEMOTED",
+      "sub": null
+    },
+    {
+      "id": "chunk_diluted-33",
+      "true": "CHUNK_DILUTED",
+      "got": "RERANK_DEMOTED",
+      "sub": null
+    }
+  ],
+  "verify_fix": {
+    "n": 29,
+    "improves_no_regression": 26,
+    "success_rate": 0.897,
+    "by_verdict": {
+      "improves_no_regression": 26,
+      "no_improvement": 3
+    },
+    "failures": [
+      {
+        "code": "RANK_LOW",
+        "id": "rank_low-70",
+        "fix": "fix_weights",
+        "verdict": "no_improvement",
+        "regressions": 0
+      },
+      {
+        "code": "RANK_LOW",
+        "id": "rank_low-71",
+        "fix": "fix_wider",
+        "verdict": "no_improvement",
+        "regressions": 0
+      },
+      {
+        "code": "RANK_LOW",
+        "id": "rank_low-72",
+        "fix": "fix_wider",
+        "verdict": "no_improvement",
+        "regressions": 0
+      }
+    ],
+    "note": "End to end: the FIRST fix suggested by diagnose_failure is applied regardless of whether the diagnosis was right."
+  },
+  "run": {
+    "ragdoc_version": "0.1.0",
+    "seed": 7,
+    "docs": 60,
+    "per_code": 8,
+    "fixture_build_seconds": 25.1,
+    "python": "3.12.3",
+    "platform": "Linux-6.18.44-fc-v165-x86_64-with-glibc2.39",
+    "cpus": 1,
+    "embedder": "hashing-384 (offline)",
+    "data": "SYNTHETIC (ragdoc.eval.corpus); not real documents"
+  }
+}

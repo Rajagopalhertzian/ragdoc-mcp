@@ -1,0 +1,78 @@
+{
+  "types_won": 3,
+  "types_total": 4,
+  "gate_passed": true,
+  "by_type": {
+    "prose": {
+      "n": 40,
+      "plan_hit@k": 1.0,
+      "base_hit@k": 0.925,
+      "plan_mrr": 1.0,
+      "base_mrr": 0.69,
+      "plan_wins": true
+    },
+    "table": {
+      "n": 40,
+      "plan_hit@k": 1.0,
+      "base_hit@k": 0.925,
+      "plan_mrr": 1.0,
+      "base_mrr": 0.716,
+      "plan_wins": true
+    },
+    "equation": {
+      "n": 40,
+      "plan_hit@k": 1.0,
+      "base_hit@k": 0.975,
+      "plan_mrr": 1.0,
+      "base_mrr": 0.874,
+      "plan_wins": true
+    },
+    "code": {
+      "n": 40,
+      "plan_hit@k": 1.0,
+      "base_hit@k": 1.0,
+      "plan_mrr": 1.0,
+      "base_mrr": 1.0,
+      "plan_wins": false
+    }
+  },
+  "plan_overall": {
+    "n": 160,
+    "hit_at_k": 1.0,
+    "mrr": 1.0,
+    "context_recall": 1.0
+  },
+  "baseline_overall": {
+    "n": 160,
+    "hit_at_k": 0.956,
+    "mrr": 0.82,
+    "context_recall": 0.992
+  },
+  "plan": {
+    "chunking": {
+      "kind": "heading",
+      "max_tokens": 600,
+      "overlap_pct": 12,
+      "prepend_heading": true,
+      "keep_tables_whole": true,
+      "keep_formulas_whole": true,
+      "table_summary": true
+    },
+    "retrieval": {
+      "dense": true,
+      "bm25": true,
+      "rerank": "lexical_overlap",
+      "candidates": 50,
+      "rrf_k": 60,
+      "weights": {
+        "dense": 1.0,
+        "bm25": 1.0
+      }
+    },
+    "embedder": {
+      "name": "hashing-384",
+      "dim": 384
+    }
+  },
+  "caveat": "SYNTHETIC corpus; keyword-style extractive questions; offline hashing embedder. Not evidence about real documents."
+}

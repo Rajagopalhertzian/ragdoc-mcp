@@ -1,0 +1,14 @@
+{
+  "_comment": "Versioned recommended-models file. VERIFY current options before relying on these; model names change quickly.",
+  "version": 1,
+  "embedders": {
+    "offline": {"name": "hashing-384", "kind": "hashing", "dim": 384, "note": "Deterministic, no download. Weaker than neural embedders; hybrid BM25 compensates."},
+    "neural_small": {"name": "BAAI/bge-small-en-v1.5", "kind": "fastembed", "dim": 384, "note": "Requires `pip install ragdoc-mcp[neural]` and a one-time model download."},
+    "code": {"name": "jinaai/jina-embeddings-v2-base-code", "kind": "fastembed", "dim": 768, "note": "Optional code-specific embedder (VERIFY availability in your fastembed version)."}
+  },
+  "rerankers": {
+    "offline": {"name": "lexical_overlap", "kind": "builtin"},
+    "neural": {"name": "Xenova/ms-marco-MiniLM-L-6-v2", "kind": "fastembed_cross_encoder", "note": "VERIFY availability in your fastembed version."}
+  },
+  "cloud_parser_cost_per_page_usd": null
+}
